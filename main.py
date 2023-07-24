@@ -1,8 +1,7 @@
-import PyQt5.QtWidgets as ui
+import ui
+import api
 
-app = ui.QApplication([])
-label = ui.QLabel('Weather Oracle')
+mainUI = ui.MainUI()
+mainUI.update_forecast()
 
-label.show()
-
-app.exec()
+mainUI.show()
