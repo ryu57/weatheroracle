@@ -7,7 +7,7 @@ class Requests:
             with open('forecast.json', 'r') as infile:
                 self.data = json.load(infile)
         except:
-            print("No Forecast file")
+            self.get_new()
 
     def get_new(self):
         api = "http://api.weatherapi.com/v1/forecast.json?"
@@ -21,7 +21,7 @@ class Requests:
 
         with open('forecast.json', 'w') as outfile:
             json.dump(data, outfile)
-        self.data = json.load(data)
+        self.data = data
 
     def list_day(self,day_num):
         return (self.data["forecast"]['forecastday'][day_num]['date'],self.data["forecast"]['forecastday'][day_num]['day']['avgtemp_c'])
