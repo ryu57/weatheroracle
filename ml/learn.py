@@ -3,56 +3,40 @@ import torch
 import torch.nn as nn
 import random
 import math
+import dataset
+from torch.utils.data import random_split
+from torch.utils.data import DataLoader
 from nn import NeuralNetwork
 
-data = pd.read_csv("data/tor_island.csv")
+data = dataset.WeatherDataset("transformed_data/5.pkl")
 
-actual_data = data["MEAN_TEMPERATURE"].tolist()
+train_data, valid_data = random_split(data, [0.7, 0.3], torch.Generator().manual_seed(42))
 
-train_data = actual_data[0:1700]
-valid_data = actual_data[1700:2222]
 
 model = NeuralNetwork()
 
 learning_rate = 1e-6
-batch_size = 5
-epochs = 10000
-
-
+batch_size = 7
+epochs = 10
 
 loss_fn = nn.MSELoss()
 
 optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
 def train_loop(train_data, model, loss_fn, optimizer):
-    for i in range(batch_size):
-        Nan_detected = True
-        while Nan_detected:
-            Nan_detected = False
-            start = random.randrange(0,1694)
-            extracted_data = train_data[start:start + 5]
-
-            for k in extracted_data:
-                if math.isnan(k):
-                    Nan_detected = True
-
-            if math.isnan(train_data[start+6]):
-                break
-
-            if Nan_detected:
-                break
-
-            data = torch.tensor(train_data[start:start + 5])
-            y = torch.tensor([train_data[start+6]])
+    model.train()
+    for batch, (X, Y) in enumerate(train_data):
 
 
-            pred = model(data)
-            loss = loss_fn(pred, y)
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
+        pred = model(X)
+        loss = loss_fn(torch.flatten(pred).double(), Y.double())
+        loss.backward()
+        optimizer.step()
+        optimizer.zero_grad()
 
-            # print(f"Loss: {loss} Pred: {pred.item()} Actual: {y.item()}")
+        if batch % 5 == 0:
+            loss = loss.item()
+            print(f"loss: {loss:>7f} ")
 
 def test_loop(valid_data, model, loss_fn):
     model.eval()
@@ -60,15 +44,17 @@ def test_loop(valid_data, model, loss_fn):
     test_loss, error = 0, 0
     n = 0
     with torch.no_grad():
-        for i in range(516):
+        for X, Y in valid_data:
             n += 1
-            pred = model(torch.tensor(valid_data[i:i+5]))
-            test_loss += loss_fn(pred, torch.tensor([valid_data[i+6]])).item()
-            error += abs(pred.item() - valid_data[i+6])
+            pred = model(X)
+            test_loss += loss_fn(pred.flatten(), Y).item()
+            error += abs(pred.item() - Y)
 
-    print(f"Average error: {error/n}")
+    print(f"Average error: {error.item() / n}")
 
 for t in range(epochs):
-    train_loop(train_data, model, loss_fn, optimizer)
+    train_loop(DataLoader(train_data, batch_size=batch_size, shuffle=True), model, loss_fn, optimizer)
 
-test_loop(valid_data, model, loss_fn)
+test_loop(DataLoader(valid_data, batch_size=1, shuffle=True), model, loss_fn)
+
+torch.save(model.state_dict(), 'model_weights.pth')
