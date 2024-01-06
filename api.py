@@ -13,7 +13,9 @@ class Requests:
             with open('history.json', 'r') as infile:
                 self.historical_data = json.load(infile)
         except:
-            self.get_new_forecast()
+            self.get_new_history()
+
+
 
     def get_new_forecast(self):
         api = "http://api.weatherapi.com/v1/forecast.json?"
@@ -44,16 +46,11 @@ class Requests:
 
         with open('history.json', 'w') as outfile:
             json.dump(data, outfile)
-        self.data = data
+        self.historical_data = data
 
-    def list_day(self,day_num):
-        return (self.data["forecast"]['forecastday'][day_num]['date'],self.data["forecast"]['forecastday'][day_num]['day']['avgtemp_c'])
 
-    def list_history(self):
-        arr = []
-        for i in range(7):
-            arr.append(self.historical_data["forecast"]['forecastday'][i]['day']['avgtemp_c'])
-        return arr
+
+
 
 
 

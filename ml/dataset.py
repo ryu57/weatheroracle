@@ -11,6 +11,6 @@ class WeatherDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, item):
-        return torch.tensor(self.data['Past 7'][item]), self.data['Target'][item]
+        return torch.tensor(self.data['Past 10'][item]), self.data['Target'][item]
 
 

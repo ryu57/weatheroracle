@@ -1,19 +1,11 @@
 import ui
-import api
-import ml.nn
-import torch
-import datetime
+import sys
+from PyQt5.QtWidgets import QApplication
 
-mainUI = ui.MainUI()
-mainUI.update_forecast()
-
-requests = api.Requests()
-history = requests.list_history()
-model = ml.nn.NeuralNetwork()
-model.load_state_dict(torch.load('ml/model_weights.pth'))
-model.eval()
-
-print(model(torch.tensor(history)))
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    mainUI = ui.MainUI()
+    mainUI.update_forecast_ui()
 
 
-mainUI.show()
+    sys.exit(mainUI.run())

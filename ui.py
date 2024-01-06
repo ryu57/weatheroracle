@@ -1,66 +1,75 @@
-import PyQt5.QtWidgets as ui
+import PyQt5.QtWidgets as QtWidgets
+import forecast
 import time
-import api
 
-class MainUI:
+
+class MainUI(QtWidgets.QMainWindow):
     def __init__(self):
-        self.requests = api.Requests()
-        self.app = ui.QApplication([])
-        self.window = ui.QWidget()
-        self.window.setWindowTitle('Weather Oracle')
-        self.layout = ui.QHBoxLayout()
+        super().__init__()
+        self.forecast = forecast.Forecast()
 
+        self.setWindowTitle('Weather Oracle')
+        self.setGeometry(100, 100, 300, 600)
+
+        self.central_widget = QtWidgets.QWidget()
+        self.setCentralWidget(self.central_widget)
+
+        self.layout = QtWidgets.QHBoxLayout()
+        self.setup_ui()
+
+    def setup_ui(self):
+        self.setStyleSheet("background-color: lightblue;")
         self.day_list = []
         for i in range(7):
-            current = DayUI("blank", "blank")
-            self.layout.addWidget(current.get_widget())
+            current = DayUI()
+            self.layout.addWidget(current)
             self.day_list.append(current)
 
+        self.central_widget.setLayout(self.layout)
 
-        self.testlabel = ui.QLabel("test")
-        self.layout.addWidget(self.testlabel)
-
-        self.window.setLayout(self.layout)
-
-
-
-
-    def update_forecast(self):
+    def update_forecast_ui(self):
+        self.forecast.update_data()
+        dates, temp = self.forecast.get_dates_and_temp()
         for i in range(7):
-            data = self.requests.list_day(i)
-            self.day_list[i].set_labeltop(str(data[0]))
-            self.day_list[i].set_labelbot(str(data[1]))
-    def show(self):
-        self.window.show()
-        self.app.exec()
+            self.day_list[i].set_label_top(str(dates[7 + i]))
+            self.day_list[i].set_label_bottom(str(temp[7 + i]))
 
-
-class DayUI:
-    def __init__(self, text1, text2):
-        self.day = ui.QWidget()
-        self.day_layout = ui.QVBoxLayout()
-        self.labeltop = ui.QLabel(text1)
-        self.day_layout.addWidget(self.labeltop)
-        self.labelbot = ui.QLabel(text2)
-        self.day_layout.addWidget(self.labelbot)
-        self.day.setLayout(self.day_layout)
-    def get_widget(self):
-        return self.day
-
-    def set_labeltop(self, text):
-        self.labeltop.setText(text)
-
-    def set_labelbot(self, text):
-        self.labelbot.setText(text)
+    def run(self):
+        self.show()
+        return QtWidgets.QApplication.instance().exec_()
 
 
 
+class DayUI(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.day_layout = QtWidgets.QVBoxLayout()
+
+        # Creating labels
+        self.label_top = QtWidgets.QLabel("Default Top Text")
+        self.label_bottom = QtWidgets.QLabel("Default Bottom Text")
+
+        # Adding labels to the layout
+        self.day_layout.addWidget(self.label_top)
+        self.day_layout.addWidget(self.label_bottom)
+
+        # Setting the layout for the widget
+        self.setLayout(self.day_layout)
+        self.day_layout.setSpacing(0)
+
+        # Setting the background color for the entire widget
+        self.setStyleSheet("background-color: lightgreen;")
+
+    def set_label_top(self, text):
+        self.label_top.setText(text)
+
+    def set_label_bottom(self, text):
+        self.label_bottom.setText(text)
 
 
-# while True:
-#     time.sleep(1)
-#     label.setText("test {}".format(i))
-#     i += 1
+
+
 
 
 
