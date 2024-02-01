@@ -17,10 +17,10 @@ class Requests:
 
 
 
-    def get_new_forecast(self):
+    def get_new_forecast(self, location="Toronto"):
         api = "http://api.weatherapi.com/v1/forecast.json?"
         key = "key=28b5a01635e94ca99ec182217232407"
-        query = "&q=Toronto"
+        query = "&q=" + location
         days = "&days=7"
         final = api + key + query + days
 
@@ -31,10 +31,10 @@ class Requests:
             json.dump(data, outfile)
         self.data = data
 
-    def get_new_history(self):
+    def get_new_history(self, location="Toronto"):
         api = "http://api.weatherapi.com/v1/history.json?"
         key = "key=28b5a01635e94ca99ec182217232407"
-        query = "&q=Toronto"
+        query = "&q=" + location
         date_end = datetime.date.today() - datetime.timedelta(days=1)
         date_start = datetime.date.today() - datetime.timedelta(days=7)
         day_start = f"&dt={date_start}"
