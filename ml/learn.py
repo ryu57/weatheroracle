@@ -36,22 +36,22 @@ def train_loop(train_data, model, loss_fn, optimizer):
 
         # if batch % 400 == 0:
         #     loss = loss.item()
-    print(f"loss: {loss:>7f} ")
+    # print(f"loss: {loss:>7f} ")
     valid_loop(DataLoader(valid_data, batch_size=10, shuffle=True), model, loss_fn)
 
 def test_loop(valid_data, model, loss_fn):
     model.eval()
 
-    test_loss, error = 0, 0
+    test_loss, error = 0, []
     n = 0
     with torch.no_grad():
         for X, Y in valid_data:
             n += 1
             pred = model(X)
             test_loss += loss_fn(pred.flatten(), Y).item()
-            error += abs(pred.item() - Y)
+            error.append(abs(pred.item() - Y.item()))
 
-    print(f"Average error: {error.item() / n}")
+    return error
 
 def valid_loop(valid_data, model, loss_fn):
     model.eval()
@@ -64,11 +64,17 @@ def valid_loop(valid_data, model, loss_fn):
             pred = model(X)
             test_loss += loss_fn(pred.flatten(), Y).item()
 
-    print(f"Average loss: {test_loss / n}")
+    # print(f"Average loss: {test_loss / n}")
 
 for t in range(epochs):
     train_loop(DataLoader(train_data, batch_size=batch_size, shuffle=True), model, loss_fn, optimizer)
 
-test_loop(DataLoader(valid_data, batch_size=1, shuffle=True), model, loss_fn)
+error = test_loop(DataLoader(valid_data, batch_size=1, shuffle=True), model, loss_fn)
 
-torch.save(model.state_dict(), 'model_weights.pth')
+import numpy as np
+print(np.mean(error))
+print(np.std(error))
+print(1.645 * np.std(error) / len(error)**0.5)
+print(1.96 * np.std(error) / len(error)**0.5)
+print(2.576 * np.std(error) / len(error)**0.5)
+# torch.save(model.state_dict(), 'model_weights.pth')
